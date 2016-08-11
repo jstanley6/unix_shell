@@ -2,8 +2,10 @@
 Unix Shell - Programmed in C
 
 <p>
-Executable framework for a Linux shell using the C programming language. The command prompt is similar to unix allowing
-the user to execute any Linux command.
+Executable framework for a Linux shell programmed in C on a x64amd processor running Ubuntu. </br>
+The command prompt is similar to unix allowing the user to execute any Linux command.
+</p>
+<p>
 <ul>
 <li>User is promted with "command?:".</li>
 <li>the shell will exit when the “exit” command is issued.</li>
