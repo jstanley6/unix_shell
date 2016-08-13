@@ -7,35 +7,36 @@
 #include "alias/alias.h"
 
 
-void command(char *s, LinkedList *history_list, LinkedList *alias_list, int addtoHistory); // 1 to add to hist
+void command(char *inputString, LinkedList *historyList, LinkedList *alias_list, int addtoHistory); // 1 to add to hist
 void msshrc(LinkedList *alias_list, LinkedList *history, FILE *fin);
 
 int main() {
 
-    char s[MAX];
+    char userInput[MAX];
     FILE *fp = NULL;
-    LinkedList *history = linkedList();
-    LinkedList *alias_list = linkedList();
+    LinkedList *historyList = linkedList();
+    LinkedList *aliasList = linkedList();
 
-    // Default globals
+    // Default globals //
     HISTCOUNT = 100;
     HISTFILECOUNT = 1000;
     PATH_SET = 0;
-    getcwd(DIR, MAX);
-    getcwd(STARTPATH, MAX);
+    getcwd(DIR, MAX); // get current working directory for DIR var
+    getcwd(STARTPATH, MAX); // get current working directory for STARTPATH var
     strcat(MSSHHISTLOC, STARTPATH);
     strcat(MSSHHISTLOC, "/.msshrc_history");
 
+    // read the msshrc history and build the historyList //
     fp = fopen(".msshrc_history", "r");
     if (fp != NULL) {
-        int count = histcount(fp);
-        if (count > 0)
-            buildHistory(history, count, fp, readFile_History);
+        int historyCount = histcount(fp);
+        if (historyCount > 0)
+            buildHistory(historyList, historyCount, fp, readFile_History);
     }
     if (fp != NULL)
         fclose(fp);
 
-    msshrc(history, alias_list, fp);
+    msshrc(historyList, aliasList, fp);
 
     if (!PATH_SET) {
         char *pathbuf;
@@ -49,30 +50,31 @@ int main() {
         PATH_SET = 1;
     }
 
-    while (history->size > HISTFILECOUNT)
-        removeFirst(history, cleanType);
+    while (historyList->size > HISTFILECOUNT)
+        removeFirst(historyList, cleanType);
 
-    // get the args stdin //
+    // get the first command from stdin and saves to userInput//
     printf("command?: ");
-    fgets(s, MAX, stdin);
-    strip(s);
+    fgets(userInput, MAX, stdin);
+    strip(userInput);
 
+    // keep taking commands from stdin until "exit" //
+    while (strcmp(userInput, "exit") != 0) {
 
-    while (strcmp(s, "exit") != 0) {
-        getAliasCommand(s, alias_list);
-        command(s, history, alias_list, 1);
+        getAliasCommand(userInput, aliasList); //
+        command(userInput, historyList, aliasList, 1);
         fflush(stdin);
         printf("command?: ");
-        fgets(s, MAX, stdin);
-        strip(s);
+        fgets(userInput, MAX, stdin);
+        strip(userInput);
     }// end while
 
 
-    clearList(alias_list, clean_alias);
-    clearList(history, cleanType);
-    free(history);
-    free(alias_list);
-    // write to history file on exit
+    clearList(aliasList, clean_alias);
+    clearList(historyList, cleanType);
+    free(historyList);
+    free(aliasList);
+    // write to historyList file on exit
     return 0;
 
 }// end main
@@ -89,24 +91,29 @@ void msshrc(LinkedList *history, LinkedList *alias_list, FILE *fin) {
     char *token;
 
     fin = fopen(".msshrc", "r");
-    if (fin == NULL) {
 
+    if (fin == NULL) {
         return;
     }
 
     while (fgets(buffer, MAX, fin) != NULL) {
         strcpy(tokbuffer, buffer);
         token = strtok(tokbuffer, ":=\n\0");
+
         if (strcmp(token, "HISTCOUNT") == 0)
             HISTCOUNT = atoi(strtok(NULL, "=\n\0"));
+
         else if (strcmp(token, "HISTFILECOUNT") == 0)
             HISTFILECOUNT = atoi(strtok(NULL, "=\n\0"));
+
         else if (strcmp(token, "PATH") == 0) {
             token = strtok(NULL, ":");
+
             if (strcmp(token, "$PATH") != 0) {
                 strip(buffer);
                 printf("%s: command not found\n", buffer);
             }
+
             token = strtok(NULL, "\n\0");
             strcpy(PATH, token);
             PATH_SET = 1;
@@ -180,59 +187,61 @@ int isNum(char *num) {
     return 1;
 }
 
-void command(char *s, LinkedList *history_list, LinkedList *alias_list, int addtoHistory) {
+void command(char *inputString, LinkedList *historyList, LinkedList *alias_list, int addtoHistory) {
 
     static char lastcmd[MAX] = "";
-    int argc, pipeCount, preCount = 0, postCount = 0, ex=1;
-    char **argv = NULL, s2[MAX], s3[MAX], s4[MAX], s5[MAX], s6[MAX], s7[MAX],
+    int numberOfArgs, pipeCount, preCount = 0, postCount = 0, ex = 1;
+
+    char **argv = NULL, inputCopy2[MAX], inputCopy3[MAX], inputCopy4[MAX],
+            inputCopy5[MAX], inputCopy6[MAX], inputCopy7[MAX],
             **prePipe = NULL, **postPipe = NULL, *alias_name = NULL,
             *alias_cmd = NULL, *token;
 
-    // duplicate the input string ////////
-    strcpy(s2, s); // duplicate the captured string
-    strcpy(s3, s);
-    strcpy(s4, s);
-    strcpy(s5, s);
-    strcpy(s6, s);
-    strcpy(s7, s);
+    // make copies of the input string //
+    strcpy(inputCopy2, inputString);
+    strcpy(inputCopy3, inputString);
+    strcpy(inputCopy4, inputString);
+    strcpy(inputCopy5, inputString);
+    strcpy(inputCopy6, inputString);
+    strcpy(inputCopy7, inputString);
 
-    pipeCount = containsPipe(s); // check for pipes
-    argc = makeargs(s, &argv); // tokenize the args
+    pipeCount = containsPipe(inputString); // check for pipes
+    numberOfArgs = makeargs(inputString, &argv); // tokenize the args
 
-    // update history_list info ///////////////
-    if (argc > 0) {
+    // update historyList info //
+    if (numberOfArgs > 0) {
         if (addtoHistory) {
-            if (history_list->size >= HISTFILECOUNT)
-                removeFirst(history_list, cleanType);
-            addLast(history_list, buildNode_Type(buildType_Args(argc, argv)));
-            writeHistory(history_list);
+            if (historyList->size >= HISTFILECOUNT)
+                removeFirst(historyList, cleanType);
+            addLast(historyList, buildNode_Type(buildType_Args(numberOfArgs, argv)));
+            writeHistory(historyList);
         }
-        ///////////////////////////////////////////////////////////////////////
 
-        if (s2[0] == '!') {
+        // input is at least single bang
+        if (inputCopy2[0] == '!') {
 
             history *ret_hist;
             char number[MAX];
             char new_s[MAX];
             int i;
 
-            if (s2[1] == '!') { // doble bang
-                if (s2[2] == '\0') {
-                    command(lastcmd, history_list, alias_list, 0);
+            // input is double bang
+            if (inputCopy2[1] == '!') {
+                if (inputCopy2[2] == '\0') {
+                    command(lastcmd, historyList, alias_list, 0);
                     ex=0;
                 }
-            }
-            else {  // single bang
-                if (s2[1] != ' ') {
-                    if (s2[1] == '\0')
+            } else {  // input single bang
+                if (inputCopy2[1] != ' ') {
+                    if (inputCopy2[1] == '\0')
                         ex=0;
                     i = 1;
 
-                    while (i <= strlen(s2) - 1)
-                        number[i - 1] = s2[i++];
+                    while (i <= strlen(inputCopy2) - 1)
+                        number[i - 1] = inputCopy2[i++];
                     number[i - 1] = '\0';
                     if (isNum(number)) {
-                        ret_hist = (history *) getItem(history_list, atoi(number));
+                        ret_hist = (history *) getItem(historyList, atoi(number));
                         if (ret_hist != NULL) {
                             i = 0;
                             while (i < ret_hist->argc) {
@@ -240,7 +249,7 @@ void command(char *s, LinkedList *history_list, LinkedList *alias_list, int addt
                                 strcat(new_s, " ");
                             }
                             if (new_s[0] != '!' && new_s[1] != '!')
-                                command(new_s, history_list, alias_list, 0);
+                                command(new_s, historyList, alias_list, 0);
                             else
                                 printf("%s: event not allowed from ! or !!\n", new_s);
                             ex=0;
@@ -254,22 +263,22 @@ void command(char *s, LinkedList *history_list, LinkedList *alias_list, int addt
             }
         }
 
-        strcpy(lastcmd, s2);
+        strcpy(lastcmd, inputCopy2);
         // if CD command //
         if (strcmp(argv[0], "cd") == 0) {
-            if (argc == 2)
+            if (numberOfArgs == 2)
                 cd(argv[1]);
             return;
         }
 
         // PATH SHITFUCKERY //
-        if (strcmp(s6, "echo \"$PATH\"") == 0) {
+        if (strcmp(inputCopy6, "echo \"$PATH\"") == 0) {
             printf("%s\n", PATH);
             return;
         }
 
-        if (argc == 1) {
-            token = strtok(s6, "=");
+        if (numberOfArgs == 1) {
+            token = strtok(inputCopy6, "=");
             if (strcmp("PATH", token) == 0) {
                 token = strtok(NULL, "\n\0");
                 if (token != NULL) {
@@ -278,8 +287,7 @@ void command(char *s, LinkedList *history_list, LinkedList *alias_list, int addt
                     setenv("PATH", PATH, 1);
                     PATH_SET = 1;
                     return;
-                }
-                else if (s7[4] == '=') {
+                } else if (inputCopy7[4] == '=') {
                     PATH_SET = 1;
                     strcpy(PATH, "");
                     return;
@@ -289,7 +297,7 @@ void command(char *s, LinkedList *history_list, LinkedList *alias_list, int addt
         }
 
         // CHECK IF INPUT IS ALIAS //
-        int alias_type = checkFor_alias(s3, &alias_name, &alias_cmd);
+        int alias_type = checkFor_alias(inputCopy3, &alias_name, &alias_cmd);
 
         // ALIAS - ADD TO ALIAS LIST ////////
         if (alias_type == 1) {
@@ -316,33 +324,33 @@ void command(char *s, LinkedList *history_list, LinkedList *alias_list, int addt
 
             // IF NOT AN ALIAS ________________________________//
         else if (alias_type != -1) {
-            if (strcmp(s, "history") == 0) { // see if history_list requested
-                argc = makeargs(s, &argv);
-                printHistory(history_list, HISTCOUNT, printType);
-                clean(argc, argv);
+            if (strcmp(inputString, "history") == 0) { // see if historyList requested
+                numberOfArgs = makeargs(inputString, &argv);
+                printHistory(historyList, HISTCOUNT, printType);
+                clean(numberOfArgs, argv);
             }
             else { // else pipe this shit
                 if (pipeCount > 0 && ex) {
-                    prePipe = parsePrePipe(s2, &preCount);
-                    postPipe = parsePostPipe(s2, &postCount);
+                    prePipe = parsePrePipe(inputCopy2, &preCount);
+                    postPipe = parsePostPipe(inputCopy2, &postCount);
                     pipeItToFile(prePipe, postPipe, "out.txt");
                     clean(preCount, prePipe);
                     clean(postCount, postPipe);
                 }// end if pipeCount
 
                 else {
-                    argc = makeargs(s2, &argv);
-                    if (argc != -1)
+                    numberOfArgs = makeargs(inputCopy2, &argv);
+                    if (numberOfArgs != -1)
                         forkIt(argv);
 
-                    clean(argc, argv);
+                    clean(numberOfArgs, argv);
                     argv = NULL;
                 }
             }
         }
     }
     else
-        (clean(argc, argv));
+        (clean(numberOfArgs, argv));
 
 
 }

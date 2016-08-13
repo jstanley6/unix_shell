@@ -13,10 +13,10 @@ struct alias {
 };
 typedef struct alias Alias;
 
-void getAliasCommand(char *s, LinkedList *theList);
+void getAliasCommand(char *s, LinkedList *aliasList);
 void *buildType_Alias(char *name, char *command);
 
-int checkFor_alias(char *s, char **alias, char **command);
+int checkFor_alias(char *inputString, char **alias, char **command);
 
 int comparator(const void *v1, const void *v2);
 

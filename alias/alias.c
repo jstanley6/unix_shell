@@ -1,6 +1,8 @@
-//
-// Created by josh on 1/26/16.
-//
+/**
+ *
+ * @author Josh Cotes
+ * @created 1/26/16.
+ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -9,25 +11,32 @@
 #define FALSE 0;
 #define TRUE 1;
 
-void getAliasCommand(char *s, LinkedList *theList) {
+/**
+ * Takes an alias
+ * @param s
+ * @param aliasList
+ */
+void getAliasCommand(char *s, LinkedList *aliasList) {
 
-    if (theList == NULL) {
+    if (aliasList == NULL) {
         exit(-99);
-    }
-    else if (theList->size == 0) {
+    } else if (aliasList->size == 0) {
         return;
     }
-    else {
-        Node *curr = theList->head;
-        do {
-            Alias *c_alias = (Alias *) curr->next->data;
 
-            if (strcmp(c_alias->alias_name, s) == 0) {
-                strcpy(s, c_alias->command);
+        // traverse the nodes
+    else {
+        Node *thisNode = aliasList->head; // initialize a Node pointer to the aliasList head node
+
+        do { //
+            Alias *nextAlias = (Alias *) thisNode->next->data; //  initialize an Alias pointer to the next Node's data
+
+            if (strcmp(nextAlias->alias_name, s) == 0) {
+                strcpy(s, nextAlias->command);
                 return;
             }
-            curr = curr->next;
-        } while (curr->next != NULL && curr != NULL);
+            thisNode = thisNode->next;
+        } while (thisNode->next != NULL);
     }
 }
 
@@ -51,7 +60,7 @@ void *buildType_Alias(char *name, char *command) {
     return s_alias;
 }
 
-int checkFor_alias(char *s, char **alias, char **command) {
+int checkFor_alias(char *inputString, char **alias, char **command) {
 
     char *rp = NULL;
     char *token = NULL;
@@ -59,7 +68,7 @@ int checkFor_alias(char *s, char **alias, char **command) {
     char *s_ptr = NULL;
     char *tokens[2]; // holds the alias and command 0 and 1 respectively
 
-    s_ptr = s;
+    s_ptr = inputString;
     token = strtok_r(s_ptr, delims, &rp);
     s_ptr = NULL;
     if (token == NULL)
@@ -79,14 +88,12 @@ int checkFor_alias(char *s, char **alias, char **command) {
             tokens[1] = strtok_r(s_ptr, "\"", &rp);
             if (tokens[1] == NULL)
                 return 0;
-        }
-        else if (*rp == '\'') { // command in single quotes
+        } else if (*rp == '\'') { // command in single quotes
             rp++;
             tokens[1] = strtok_r(s_ptr, "\'", &rp);
             if (tokens[1] == NULL)
                 return 0;
-        }
-        else {           // command not in any quotes
+        } else {           // command not in any quotes
             tokens[1] = strtok_r(s_ptr, "\n\0", &rp);
             if (tokens[1] == NULL)
                 return 0;
@@ -110,8 +117,7 @@ int checkFor_alias(char *s, char **alias, char **command) {
         *alias = calloc(strlen(tokens[0]) + 1, sizeof(char));
         strcpy(*alias, tokens[0]);
         return 2;
-    }
-    else
+    } else
         return 0;
 }
 
