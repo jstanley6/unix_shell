@@ -95,11 +95,11 @@ int compare(const void *p1, const void *p2);
  * specific data type.  Each pointer in the specific data type is set
  * to NULL after it has been freed.
  *
- * @param passedIn - The void * passed in representing the specific data
+ * @param historyIn - The void * passed in representing the specific data
  *
  * @warning - The passed in void * passedIn is checked - exit(-99) if NULL
  */
-void cleanType(void *passedIn);
+void cleanType(void *historyIn);
 
 
 #endif // GENERICDATA_H

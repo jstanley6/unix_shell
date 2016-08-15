@@ -5,7 +5,6 @@
 */
 
 #include "listUtils.h"
-#include "../utils/fileUtil.h"
 
 /**
  * @brief Builds a node that contains a pointer to the specific data type.
@@ -16,7 +15,7 @@
  * function pointer.
  *
  * @param fin - The FILE * used to read the data from the file
- * @param *buildData - The function pointer to build an object of the specific data type
+ * @param buildData - The function pointer to build an object of the specific data type
  * @return Node * - Representing a node for the linked list containing the specific data type.
  *
  * @note - The first parameter FILE * fin is not used in the function.  It is entirely
@@ -48,7 +47,7 @@ Node *buildNode(FILE *fin, void *(*buildData)(FILE *in)) {
  * by calling the appropriate specific data function, which is called via
  * function pointer.
  *
- * @param *passedIn - The void * for the data type being created
+ * @param passedIn - The void * for the data type being created
  * @return Node * - Representing a node for the linked list containing the specific data type.
  */
 Node *buildNode_Type(void *passedIn) {
@@ -69,7 +68,7 @@ Node *buildNode_Type(void *passedIn) {
  * linked list functions.
  *
  * @param theList - The linked list  * representing the list
- * @param *compare - The specific data type compare function as a function pointer
+ * @param compare - The specific data type compare function as a function pointer
  *
  * @warning - The passed in LinkedList * theList is checked - exit(-99) if NULL
  * @warning - The theList-> size is checked and if the list contains 0 or 1 element then the function
@@ -110,7 +109,7 @@ void sort(LinkedList *theList, int (*compare)(const void *, const void *)) {
  * @param theList - The linked list  * representing the list
  * @param total - The total items to be placed into the list
  * @param fin - The FILE * used to read the data from the file
- * @param *buildData - The function pointer to call the specific function
+ * @param buildData - The function pointer to call the specific function
  * to build the appropriate data type.
  *
  * @note - The parameter FILE * fin is not used in the function.  It is entirely
@@ -169,7 +168,7 @@ void writeHistory(LinkedList *list) { // builds the list backwards (like in ubun
         return;
 
     else {
-        history *s_hist;
+        S_history *s_hist;
 
         FILE *fp = fopen(MSSHHISTLOC, "w");
         Node node_curr;
@@ -183,7 +182,7 @@ void writeHistory(LinkedList *list) { // builds the list backwards (like in ubun
 
             int counter, i;
 
-            s_hist = (history *) node_curr.data;
+            s_hist = (S_history *) node_curr.data;
 
             for (counter = 0; counter < s_hist->argc; counter++) {
                 fputs(*(s_hist->argv + counter), fp);

@@ -1,13 +1,13 @@
 CC=gcc
 
-mssh:	mssh.c ./history/history.o ./tokenize/makeArgs.o ./utils/myUtils.o ./process/process.o ./pipes/pipes.o ./linkedlist/linkedList.o ./linkedlist/listUtils.o ./alias/alias.o
-	gcc -g mssh.c ./history/history.o ./tokenize/makeArgs.o ./utils/myUtils.o ./process/process.o ./pipes/pipes.o ./linkedlist/linkedList.o ./linkedlist/listUtils.o ./utils/fileUtil_64.o ./alias/alias.o -o mssh
+mssh:	mssh.c ./S_history/S_history.o ./tokenize/makeArgs.o ./utils/myUtils.o ./process/process.o ./pipes/pipes.o ./linkedlist/linkedList.o ./linkedlist/listUtils.o ./alias/alias.o
+	gcc -g mssh.c ./S_history/S_history.o ./tokenize/makeArgs.o ./utils/myUtils.o ./process/process.o ./pipes/pipes.o ./linkedlist/linkedList.o ./linkedlist/listUtils.o ./utils/fileUtil_64.o ./alias/alias.o -o mssh
 
 alias.o:	./alias/alias.c ./alias/alias.h
 	gcc -g -c ./alias.c
 
-history.o:	./history/history.c ./history/history.h
-	gcc -g -c ./history/history.c
+S_history.o:	./S_history/S_history.c ./S_history/S_history.h
+	gcc -g -c ./S_history/S_history.c
 
 linkedList.o:	./linkedlist/linkedList.h ./linkedlist/linkedList.c ./linkedlist/genericData.h ./linkedlist/requiredIncludes.h
 	gcc -c ./linkedlist/linkedList.c
@@ -28,9 +28,10 @@ pipes.o:	./pipes/pipes.c ./pipes/pipes.h
 	gcc -g -c ./pipes/pipes.c
 
 clean:
-	rm ./pipes/pipes.o	
+	rm ./pipes/pipes.o
 	rm ./utils/myUtils.o
 	rm ./process/process.o
 	rm ./tokenize/makeArgs.o
+	rm ./.msshrc* -f
 	rm mssh
 

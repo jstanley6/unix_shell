@@ -26,10 +26,10 @@ int main() {
     strcat(MSSHHISTLOC, STARTPATH);
     strcat(MSSHHISTLOC, "/.msshrc_history");
 
-    // read the msshrc history and build the historyList //
+    // read the msshrc history and build the historyList structure //
     fp = fopen(".msshrc_history", "r");
     if (fp != NULL) {
-        int historyCount = histcount(fp);
+        int historyCount = histCount(fp);
         if (historyCount > 0)
             buildHistory(historyList, historyCount, fp, readFile_History);
     }
@@ -192,13 +192,13 @@ void command(char *inputString, LinkedList *historyList, LinkedList *alias_list,
     static char lastcmd[MAX] = "";
     int numberOfArgs, pipeCount, preCount = 0, postCount = 0, ex = 1;
 
-    char **argv = NULL, inputCopy2[MAX], inputCopy3[MAX], inputCopy4[MAX],
+    char **argv = NULL, inputCopy[MAX], inputCopy3[MAX], inputCopy4[MAX],
             inputCopy5[MAX], inputCopy6[MAX], inputCopy7[MAX],
             **prePipe = NULL, **postPipe = NULL, *alias_name = NULL,
             *alias_cmd = NULL, *token;
 
     // make copies of the input string //
-    strcpy(inputCopy2, inputString);
+    strcpy(inputCopy, inputString);
     strcpy(inputCopy3, inputString);
     strcpy(inputCopy4, inputString);
     strcpy(inputCopy5, inputString);
@@ -218,30 +218,30 @@ void command(char *inputString, LinkedList *historyList, LinkedList *alias_list,
         }
 
         // input is at least single bang
-        if (inputCopy2[0] == '!') {
+        if (inputCopy[0] == '!') {
 
-            history *ret_hist;
+            S_history *ret_hist;
             char number[MAX];
             char new_s[MAX];
             int i;
 
             // input is double bang
-            if (inputCopy2[1] == '!') {
-                if (inputCopy2[2] == '\0') {
+            if (inputCopy[1] == '!') {
+                if (inputCopy[2] == '\0') {
                     command(lastcmd, historyList, alias_list, 0);
                     ex=0;
                 }
             } else {  // input single bang
-                if (inputCopy2[1] != ' ') {
-                    if (inputCopy2[1] == '\0')
+                if (inputCopy[1] != ' ') {
+                    if (inputCopy[1] == '\0')
                         ex=0;
                     i = 1;
 
-                    while (i <= strlen(inputCopy2) - 1)
-                        number[i - 1] = inputCopy2[i++];
+                    while (i <= strlen(inputCopy) - 1)
+                        number[i - 1] = inputCopy[i++];
                     number[i - 1] = '\0';
                     if (isNum(number)) {
-                        ret_hist = (history *) getItem(historyList, atoi(number));
+                        ret_hist = (S_history *) getItem(historyList, atoi(number));
                         if (ret_hist != NULL) {
                             i = 0;
                             while (i < ret_hist->argc) {
@@ -263,7 +263,7 @@ void command(char *inputString, LinkedList *historyList, LinkedList *alias_list,
             }
         }
 
-        strcpy(lastcmd, inputCopy2);
+        strcpy(lastcmd, inputCopy);
         // if CD command //
         if (strcmp(argv[0], "cd") == 0) {
             if (numberOfArgs == 2)
@@ -324,22 +324,22 @@ void command(char *inputString, LinkedList *historyList, LinkedList *alias_list,
 
             // IF NOT AN ALIAS ________________________________//
         else if (alias_type != -1) {
-            if (strcmp(inputString, "history") == 0) { // see if historyList requested
+            if (strcmp(inputString, "S_history") == 0) { // see if historyList requested
                 numberOfArgs = makeargs(inputString, &argv);
                 printHistory(historyList, HISTCOUNT, printType);
                 clean(numberOfArgs, argv);
             }
             else { // else pipe this shit
                 if (pipeCount > 0 && ex) {
-                    prePipe = parsePrePipe(inputCopy2, &preCount);
-                    postPipe = parsePostPipe(inputCopy2, &postCount);
+                    prePipe = parsePrePipe(inputCopy, &preCount);
+                    postPipe = parsePostPipe(inputCopy, &postCount);
                     pipeItToFile(prePipe, postPipe, "out.txt");
                     clean(preCount, prePipe);
                     clean(postCount, postPipe);
                 }// end if pipeCount
 
                 else {
-                    numberOfArgs = makeargs(inputCopy2, &argv);
+                    numberOfArgs = makeargs(inputCopy, &argv);
                     if (numberOfArgs != -1)
                         forkIt(argv);
 

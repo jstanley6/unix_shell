@@ -2,16 +2,17 @@
  * @file history.c
  * @author Josh Cotes
  * @date 14 Jan 2016
+ *
+ * @brief Contains tools to create, modify, query, and clean the history data structure
  */
 
 #include <semaphore.h>
 #include "history.h"
-#include "../linkedlist/genericData.h"
 
 /**
- * @brief The builds the history data structure
+ * @brief Builds a history node
  *
- * Builds the history structure and returns it as a void pointer
+ * Builds a history structure and returns it as a void pointer
  *
  * @param argc - The int for the number of arguments
  * @param argv - The array to put the tokens into
@@ -23,10 +24,11 @@ void *buildType_Args(int argc, char **argv) {
 
     if (argc <= 0 || *argv == NULL)
         exit(-99);
-    history *s_hist = calloc(1, sizeof(history));
-    s_hist->argc = argc;
-    s_hist->argv = argv;
-    return s_hist;
+
+    S_history *newHistory = calloc(1, sizeof(S_history));
+    newHistory->argc = argc;
+    newHistory->argv = argv;
+    return newHistory;
 }
 
 /**
@@ -34,7 +36,7 @@ void *buildType_Args(int argc, char **argv) {
  *
  * The printType function is called via function pointer
  * Its focus is to print the specific type formatted for
- * the type
+ * the history type
  *
  * @param passedIn - The void * passed in representing the specific data
  *
@@ -45,8 +47,8 @@ void printType(void *passedIn) {
     if (passedIn == NULL)
         exit(-99);
 
-    history *s_hist;
-    s_hist = (history *) passedIn;
+    S_history *s_hist;
+    s_hist = (S_history *) passedIn;
     int counter;
 
     for (counter = 0; counter < s_hist->argc; counter++) {
@@ -56,72 +58,100 @@ void printType(void *passedIn) {
 }
 
 /**
- * @brief Cleans up all dynamically allocated memory for the specific data type
+ * @brief Cleans up all dynamically allocated memory for the history data type
  *
  * Cleans up and frees all the dynamically allocated memory for the
- * specific data type.  Each pointer in the specific data type is set
+ * history data type.  Each pointer in the specific data type is set
  * to NULL after it has been freed.
  *
- * @param passedIn - The void * passed in representing the specific data
+ * @param historyIn - The void * passed in representing the specific data
  *
  * @warning - The passed in void * passedIn is checked - exit(-99) if NULL
  */
-void cleanType(void *passedIn) {
+void cleanType(void *historyIn) {
 
-    if (passedIn == NULL)
+    if (historyIn == NULL)
         exit(-99);
 
-    history *s_hist = passedIn;
+    S_history *s_hist = historyIn;
+    int i;
+
     if (s_hist->argc == 0)
         return;
 
-    int i = 0;
     for (i = 0; i < s_hist->argc; i++) {
         free(*(s_hist->argv + i));
         *(s_hist->argv + i) = NULL;
     }
+
     free(s_hist->argv);
     s_hist->argv = NULL;
     free(s_hist);
     s_hist = NULL;
-    passedIn = NULL;
+    historyIn = NULL;
 }
 
-int histcount(FILE *fin) {
+/**
+ * @brief Counts the lines of the file that the fin parameter points to
+ *
+ * Counts the number of lines of the file that the fin parameter points to. Ignores blank
+ * lines and rewinds the passed in file pointer when done.
+ *
+ * @param fin - The file pointer
+ * @return - The number of non blank lines in the file
+ * @warning - The passed in *fin is checked - exit(-99) if NULL
+ */
+int histCount(FILE *fin) {
 
-    int count = 0;
-    int ch;
-    int charcount = 0;
+    if (fin == NULL)
+        exit(-99);
+
+    int lineCount = 0;
+    int charHolder;
+    int charCount = 0;
 
     while (!feof(fin)) {
-        charcount++;
-        ch = fgetc(fin);
-        if (ch == '\n' && charcount > 1) {
-            count++;
-            charcount = 0;
-        }
-        if (ch == '\n' && charcount == 1) {
-            charcount = 0;
-        }
+        charCount++;
+        charHolder = fgetc(fin);
 
+        if (charHolder == '\n' && charCount > 1) {
+            lineCount++;
+            charCount = 0;
+        }
+        if (charHolder == '\n' && charCount == 1) {
+            charCount = 0;
+        }
     }
-
-
     rewind(fin);
-    return count;
+    return lineCount;
 }
 
+/**
+ * @brief Reads the next line of the file pointed to by fin and returns a S_history pointer with the data.
+ *
+ * Reads the next line of the file and returns a reference to buildType_Args, which returns a new
+ * S_history data structure containing the data from the line of the file.
+ *
+ * @param fin - The file pointer
+ * @return - New S_history data structure
+ * @warning - The passed in *fin is checked - exit(-99) if NULL
+ */
 void *readFile_History(FILE *fin) {
 
-    char string_buffer[MAX];
-    fgets(string_buffer, MAX, fin);
-    void *node;
+    if (fin == NULL)
+        exit(-99);
+
+    char stringBuffer[MAX];
     char **argv;
     int argc;
-    strip(string_buffer);
-    if (strcmp(string_buffer, "") != 0)
-        argc = makeargs(string_buffer, &argv);
+
+    fgets(stringBuffer, MAX, fin);
+    strip(stringBuffer);
+
+    if (strcmp(stringBuffer, "") != 0)
+        argc = makeargs(stringBuffer, &argv);
     else
         return NULL;
+
     return buildType_Args(argc, argv);
 }

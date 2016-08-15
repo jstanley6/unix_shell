@@ -22,10 +22,10 @@ command. This makes the .msshrc file a batch file. (BASH reads from .bashrc)</li
 alias LA=”ls -a"</li>
 <li>Implemented path extension feature, e.g., PATH=$PATH:/data/myprogs. Typically, this is
 executed when you log in, which means that it would be in the .msshrc file.</li>
-<li>Implemented a "history" mechanism which will allow to scroll though the last N shell commands
+<li>Implemented a "S_history" mechanism which will allow to scroll though the last N shell commands
 where N=HISTORYCOUNT is an environment variable in .msshrc. In .msshrc (if it exists) will
 be at least two environment variables HISTCOUNT and HISTFILECOUNT. If .msshrc does not
-exist, the HISTCOUNT will be 100 and HISTFILECOUNT will be 1000 by default. The history is stored in a file called
+exist, the HISTCOUNT will be 100 and HISTFILECOUNT will be 1000 by default. The S_history is stored in a file called
 .msshrc_history.</li>
 <li>Implemented CD (change directory) command</li>
 </ul>
