@@ -10,6 +10,8 @@
 void command(char *inputString, LinkedList *historyList, LinkedList *alias_list, int addtoHistory); // 1 to add to hist
 void msshrc(LinkedList *alias_list, LinkedList *history, FILE *fin);
 
+void setGlobals();
+
 int main() {
 
     char userInput[MAX];
@@ -17,14 +19,7 @@ int main() {
     LinkedList *historyList = linkedList();
     LinkedList *aliasList = linkedList();
 
-    // Default globals //
-    HISTCOUNT = 100;
-    HISTFILECOUNT = 1000;
-    PATH_SET = 0;
-    getcwd(DIR, MAX); // get current working directory for DIR var
-    getcwd(STARTPATH, MAX); // get current working directory for STARTPATH var
-    strcat(MSSHHISTLOC, STARTPATH);
-    strcat(MSSHHISTLOC, "/.msshrc_history");
+    setGlobals();
 
     // read the msshrc history and build the historyList structure //
     fp = fopen(".msshrc_history", "r");
@@ -324,7 +319,7 @@ void command(char *inputString, LinkedList *historyList, LinkedList *alias_list,
 
             // IF NOT AN ALIAS ________________________________//
         else if (alias_type != -1) {
-            if (strcmp(inputString, "S_history") == 0) { // see if historyList requested
+            if (strcmp(inputString, "history") == 0) { // see if historyList requested
                 numberOfArgs = makeargs(inputString, &argv);
                 printHistory(historyList, HISTCOUNT, printType);
                 clean(numberOfArgs, argv);
@@ -351,6 +346,19 @@ void command(char *inputString, LinkedList *historyList, LinkedList *alias_list,
     }
     else
         (clean(numberOfArgs, argv));
-
-
 }
+
+/**
+ * @brief Sets the global variables used throughout the shell.
+ */
+void setGlobals() {
+
+    HISTCOUNT = 100;
+    HISTFILECOUNT = 1000;
+    PATH_SET = 0;
+    getcwd(DIR, MAX); // get current working directory for DIR var
+    getcwd(STARTPATH, MAX); // get current working directory for STARTPATH var
+    strcat(MSSHHISTLOC, STARTPATH);
+    strcat(MSSHHISTLOC, "/.msshrc_history");
+}
+
