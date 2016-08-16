@@ -23,5 +23,5 @@ set(SOURCE_FILES
         linkedlist/requiredIncludes.h
         history/history.h
         history/history.c
-        alias/alias.c alias/alias.h)
-add_executable(Lab8 ${SOURCE_FILES})
+        alias/alias.c alias/alias.h systemfile/systemfileUtil.c systemfile/systemfileUtil.h command/command.c command/command.h mssh.h utils/includeslist.h)
+add_executable(Lab8 ${SOURCE_FILES} systemfile/systemfileUtil.c)

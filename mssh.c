@@ -1,37 +1,27 @@
-#include "./pipes/pipes.h"
-#include "./utils/myUtils.h"
-#include "./process/process.h"
-#include "./tokenize/makeArgs.h"
-#include "linkedlist/linkedList.h"
-#include "linkedlist/listUtils.h"
-#include "alias/alias.h"
-
+#include "mssh.h"
 
 void command(char *inputString, LinkedList *historyList, LinkedList *alias_list, int addtoHistory); // 1 to add to hist
-void msshrc(LinkedList *alias_list, LinkedList *history, FILE *fin);
-
+void run_msshrc(LinkedList *alias_list, LinkedList *history, FILE *fin);
 void setGlobals();
 
 int main() {
 
     char userInput[MAX];
-    FILE *fp = NULL;
+    FILE *historyFile = fopen(".mssh_history", "r");
     LinkedList *historyList = linkedList();
     LinkedList *aliasList = linkedList();
 
     setGlobals();
 
-    // read the msshrc history and build the historyList structure //
-    fp = fopen(".msshrc_history", "r");
-    if (fp != NULL) {
-        int historyCount = histCount(fp);
-        if (historyCount > 0)
-            buildHistory(historyList, historyCount, fp, readFile_History);
-    }
-    if (fp != NULL)
-        fclose(fp);
+    int historyCount = histCount(historyFile);
 
-    msshrc(historyList, aliasList, fp);
+    if (historyCount > 0) {
+        buildHistory(historyList, historyCount, historyFile, readFile_History);
+        fclose(historyFile);
+    }
+
+    historyFile = NULL;
+    run_msshrc(historyList, aliasList, historyFile);
 
     if (!PATH_SET) {
         char *pathbuf;
@@ -75,51 +65,7 @@ int main() {
 }// end main
 
 
-void msshrc(LinkedList *history, LinkedList *alias_list, FILE *fin) {
 
-    // run msshrc shit //
-    if (alias_list == NULL || history == NULL)
-        exit(-99);
-
-    char buffer[MAX];
-    char tokbuffer[MAX];
-    char *token;
-
-    fin = fopen(".msshrc", "r");
-
-    if (fin == NULL) {
-        return;
-    }
-
-    while (fgets(buffer, MAX, fin) != NULL) {
-        strcpy(tokbuffer, buffer);
-        token = strtok(tokbuffer, ":=\n\0");
-
-        if (strcmp(token, "HISTCOUNT") == 0)
-            HISTCOUNT = atoi(strtok(NULL, "=\n\0"));
-
-        else if (strcmp(token, "HISTFILECOUNT") == 0)
-            HISTFILECOUNT = atoi(strtok(NULL, "=\n\0"));
-
-        else if (strcmp(token, "PATH") == 0) {
-            token = strtok(NULL, ":");
-
-            if (strcmp(token, "$PATH") != 0) {
-                strip(buffer);
-                printf("%s: command not found\n", buffer);
-            }
-
-            token = strtok(NULL, "\n\0");
-            strcpy(PATH, token);
-            PATH_SET = 1;
-        }
-        else {
-            strip(buffer);
-            command(buffer, history, alias_list, 0);
-        }
-    }
-    fclose(fin);
-}
 
 void cd(char *dir) {
 
@@ -359,6 +305,6 @@ void setGlobals() {
     getcwd(DIR, MAX); // get current working directory for DIR var
     getcwd(STARTPATH, MAX); // get current working directory for STARTPATH var
     strcat(MSSHHISTLOC, STARTPATH);
-    strcat(MSSHHISTLOC, "/.msshrc_history");
+    strcat(MSSHHISTLOC, "/.mssh_history");
 }
 

@@ -109,7 +109,7 @@ void sort(LinkedList *theList, int (*compare)(const void *, const void *)) {
  * @param theList - The linked list  * representing the list
  * @param total - The total items to be placed into the list
  * @param fin - The FILE * used to read the data from the file
- * @param buildData - The function pointer to call the specific function
+ * @param *buildData - The function pointer to call the specific function
  * to build the appropriate data type.
  *
  * @note - The parameter FILE * fin is not used in the function.  It is entirely
@@ -136,31 +136,6 @@ void buildList(LinkedList *myList, int total, FILE *fin, void *(*buildData)(FILE
     }
 }
 
-/**
- * builds the list in reverse
- */
-void buildHistory(LinkedList *myList, int total, FILE *fin, void *(*buildData)(FILE *in)) {
-
-    if (myList == NULL || total <= 0)
-        exit(-99);
-
-    Node *curr = NULL;
-    while (curr == NULL)
-        curr = buildNode(fin, buildData);
-
-    myList->size++;
-    int i;
-    for (i = 1; i < total; i++) {
-        while (curr->prev == NULL)
-            curr->prev = buildNode(fin, buildData);
-        curr->prev->next = curr;
-        curr->prev->prev = NULL;
-        curr = curr->prev;
-        myList->size++;
-    }
-    curr->prev = myList->head;
-    myList->head->next = curr;
-}
 
 void writeHistory(LinkedList *list) { // builds the list backwards (like in ubuntu)
 
@@ -194,5 +169,32 @@ void writeHistory(LinkedList *list) { // builds the list backwards (like in ubun
         fclose(fp);
     }
 }
+
+/**
+ * builds the list in reverse
+ */
+void buildHistory(LinkedList *myList, int total, FILE *fin, void *(*buildData)(FILE *in)) {
+
+    if (myList == NULL || total <= 0)
+        exit(-99);
+
+    Node *curr = NULL;
+    while (curr == NULL)
+        curr = buildNode(fin, buildData);
+
+    myList->size++;
+    int i;
+    for (i = 1; i < total; i++) {
+        while (curr->prev == NULL)
+            curr->prev = buildNode(fin, buildData);
+        curr->prev->next = curr;
+        curr->prev->prev = NULL;
+        curr = curr->prev;
+        myList->size++;
+    }
+    curr->prev = myList->head;
+    myList->head->next = curr;
+}
+
 
 

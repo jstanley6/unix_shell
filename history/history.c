@@ -99,12 +99,11 @@ void cleanType(void *historyIn) {
  *
  * @param fin - The file pointer
  * @return - The number of non blank lines in the file
- * @warning - The passed in *fin is checked - exit(-99) if NULL
  */
 int histCount(FILE *fin) {
 
     if (fin == NULL)
-        exit(-99);
+        return 0;
 
     int lineCount = 0;
     int charHolder;

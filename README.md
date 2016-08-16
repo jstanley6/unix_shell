@@ -38,7 +38,7 @@ o .mssh_history is loaded if it exists</br>
 o prompt is displayed</br>
 o each command is handled appropriately</br>
 o upon exit .mssh_history is written from the executed commands</br>
-.msshrc file format – if exists (guaranteed to have HISTCOUNT and HISTFILECOUNT</br>
+.run_msshrc file format – if exists (guaranteed to have HISTCOUNT and HISTFILECOUNT</br>
 HISTCOUNT=value</br>
 HISTFILECOUNT=value</br>
 Alias1</br>

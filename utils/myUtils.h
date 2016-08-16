@@ -13,8 +13,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../linkedlist/requiredIncludes.h"
 
-#define MAX 100
 
 
 /**

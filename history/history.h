@@ -4,9 +4,12 @@
  * @date 14 Jan 2016
  */
 
+#ifndef MAX
+#define MAX 100
+#endif
+
 #ifndef HISTORY_H
 #define HISTORY_H
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,9 +17,6 @@
 
 #include "../linkedlist/genericData.h"
 #include "../tokenize/makeArgs.h"
-#include "../linkedlist/linkedList.h"
-
-#define MAX 100
 
 int HISTCOUNT;
 int HISTFILECOUNT;
@@ -55,8 +55,6 @@ void *buildType_Args(int argc, char **argv);
 int histCount(FILE *fin);
 
 void *readFile_History(FILE *fin);
-
-
 
 #endif
 
